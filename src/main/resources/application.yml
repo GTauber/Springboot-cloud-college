@@ -1,0 +1,43 @@
+server:
+  port: 8761
+
+spring:
+  profiles:
+    default: local
+  application:
+    name: spb-and-cloud
+  r2dbc:
+    url: r2dbc:mysql://localhost:3306/spb_cloud
+    username: tauber
+    password: secret
+  docker:
+    compose:
+      file: Docker/spb-cloud-compose/docker-compose.yml
+      lifecycle-management: start_only
+      profiles:
+        active: docker
+  flyway:
+    url: jdbc:mysql://localhost:3306/spb_cloud
+    user: tauber
+    password: secret
+
+logging:
+  level:
+    web: debug
+    io:
+      r2dbc:
+        pool: debug
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, env, conditions
+  endpoint:
+    health:
+      show-details: always
+
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
