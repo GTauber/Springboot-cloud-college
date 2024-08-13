@@ -1,5 +1,6 @@
 package college.spb.cloud.project.service;
 
+import college.spb.cloud.project.model.dto.mapper.ClientMapper;
 import college.spb.cloud.project.model.entity.Client;
 import college.spb.cloud.project.repository.ClientRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import reactor.core.publisher.Mono;
 public class ClientService {
 
     private final ClientRepository clientRepository;
+    private final ClientMapper clientMapper;
 
     public Mono<Client> getClientById(Long clientId) {
         return clientRepository.findById(clientId);
@@ -23,4 +25,19 @@ public class ClientService {
         return clientRepository.save(client);
     }
 
+    public Mono<Client> updateClient(Long clientId, Client client) {
+        log.info("Updating client: {}", client);
+        return clientRepository.findById(clientId)
+            .switchIfEmpty(Mono.error(new RuntimeException("Client not found"))) //TODO: Create custom exception
+            .doOnNext(existingClient -> log.info("Client found: {}", existingClient))
+            .doOnNext(existingClient -> clientMapper.partialUpdate(client, existingClient))
+            .flatMap(clientRepository::save);
+    }
+
+    public Mono<Void> deleteClient(Long clientId) {
+        return clientRepository.findById(clientId)
+            .switchIfEmpty(Mono.error(new RuntimeException("Client not found"))) //TODO: Create custom exception
+            .doOnNext(client -> log.info("Deleting client: {}", client))
+            .flatMap(clientRepository::delete);
+    }
 }

@@ -5,15 +5,16 @@ import static org.springframework.http.HttpStatus.OK;
 
 import college.spb.cloud.project.model.dto.ClientDto;
 import college.spb.cloud.project.model.dto.mapper.ClientMapper;
-import college.spb.cloud.project.model.entity.Client;
 import college.spb.cloud.project.service.ClientService;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.convert.TypeDescriptor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,21 +31,35 @@ public class ClientController {
 
     @PostMapping
     @ResponseStatus(CREATED)
-    public Mono<ResponseEntity<ClientDto>> createClient(ClientDto clientDto) {
+    public Mono<ResponseEntity<ClientDto>> createClient(@RequestBody ClientDto clientDto) {
         log.info("Request received: Create new client: {}", clientDto);
         return clientService.createClient(clientMapper.toEntity(clientDto))
             .map(client -> ResponseEntity.ok().body(clientMapper.toDto(client)));
     }
 
-    @GetMapping
+    @GetMapping("/{clientId}")
     @ResponseStatus(OK)
-    public Mono<ResponseEntity<ClientDto>> getClientById(Long clientId) {
+    public Mono<ResponseEntity<ClientDto>> getClientById(@PathVariable Long clientId) {
         log.info("Request received: Get client with id: {}", clientId);
         return clientService.getClientById(clientId)
             .map(client -> ResponseEntity.ok().body(clientMapper.toDto(client)));
     }
 
+    @PutMapping("/{clientId}")
+    @ResponseStatus(OK)
+    public Mono<ResponseEntity<ClientDto>> updateClient(@PathVariable Long clientId, @RequestBody ClientDto updatedClientDto) {
+        log.info("Request received: Update client: [{}], Original Id: [{}]", updatedClientDto, clientId);
+        return clientService.updateClient(clientId, clientMapper.toEntity(updatedClientDto))
+            .map(client -> ResponseEntity.ok().body(clientMapper.toDto(client)));
+    }
 
+    @DeleteMapping("/{clientId}")
+    @ResponseStatus(OK)
+    public Mono<ResponseEntity<Void>> deleteClient(@PathVariable Long clientId) {
+        log.info("Request received: Delete client with id: {}", clientId);
+        return clientService.deleteClient(clientId)
+            .then(Mono.fromCallable(() -> ResponseEntity.ok().build()));
+    }
 
 
 }
