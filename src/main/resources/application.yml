@@ -41,3 +41,7 @@ eureka:
   client:
     register-with-eureka: false
     fetch-registry: false
+
+weather:
+  api:
+    url: https://api.open-meteo.com/v1
